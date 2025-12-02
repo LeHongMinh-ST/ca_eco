@@ -5,22 +5,23 @@
 
 import { join } from "path";
 import { TypeOrmModuleOptions } from "@nestjs/typeorm";
+import { ConfigService } from "@nestjs/config";
 
 /**
  * Get TypeORM configuration from environment variables
  */
-export const getDatabaseConfig = (): TypeOrmModuleOptions => {
+export const getDatabaseConfig = (
+  configService: ConfigService,
+): TypeOrmModuleOptions => {
   return {
     type: "postgres",
-
-    host: process.env.DATABASE_HOST || "localhost",
-    port: process.env.DATABASE_PORT ? Number(process.env.DATABASE_PORT) : 5432,
-    username: process.env.DATABASE_USER || "user",
-    password: process.env.DATABASE_PASSWORD || "password",
-    database: process.env.DATABASE_NAME || "db",
-
-    synchronize: process.env.DATABASE_SYNCHRONIZE === "true",
-    logging: process.env.DATABASE_LOGGING === "true",
+    host: configService.get<string>("DATABASE_HOST") || "localhost",
+    port: configService.get<number>("DATABASE_PORT") || 5432,
+    username: configService.get<string>("DATABASE_USER") || "user",
+    password: configService.get<string>("DATABASE_PASSWORD") || "password",
+    database: configService.get<string>("DATABASE_NAME") || "ca_eco",
+    synchronize: configService.get<string>("DATABASE_SYNCHRONIZE") === "true",
+    logging: configService.get<string>("DATABASE_LOGGING") === "true",
     entities: [join(__dirname, "../../../modules/**/*.orm-entity{.ts,.js}")],
     migrations: [join(__dirname, "../migrations/*{.ts,.js}")],
     migrationsRun: false,

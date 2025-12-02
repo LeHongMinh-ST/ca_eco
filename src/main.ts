@@ -6,10 +6,8 @@ import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-
   // comment: global prefix
   app.setGlobalPrefix("api");
-
 
   // comment: Swagger config
   const swaggerConfig = new DocumentBuilder()
@@ -17,7 +15,6 @@ async function bootstrap() {
     .setDescription("Stayly Bookings API Documentation")
     .setVersion("1.0")
     .addBearerAuth(
-
       {
         type: "http",
         scheme: "bearer",
@@ -28,8 +25,7 @@ async function bootstrap() {
         in: "header",
       },
 
-      "JWT-auth"
-
+      "JWT-auth",
     )
     .addTag("health")
     .build();
@@ -45,4 +41,3 @@ async function bootstrap() {
   await app.listen(process.env.PORT || 3000);
 }
 bootstrap();
-

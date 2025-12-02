@@ -31,6 +31,51 @@
 $ pnpm install
 ```
 
+## Docker Setup
+
+Dự án hỗ trợ cả PostgreSQL và MongoDB để demo tính linh hoạt khi switch database trong DDD.
+
+### Khởi động Databases
+
+```bash
+# Khởi động tất cả services (PostgreSQL, MongoDB, pgAdmin, Mongo Express)
+docker-compose up -d
+
+# Chỉ khởi động PostgreSQL
+docker-compose up -d postgres
+
+# Chỉ khởi động MongoDB
+docker-compose up -d mongodb
+```
+
+### Database Management UIs
+
+- **pgAdmin** (PostgreSQL): http://localhost:5050
+- **Mongo Express** (MongoDB): http://localhost:8081
+
+Xem chi tiết trong [docker/README.md](./docker/README.md)
+
+## Database Switching
+
+Dự án sử dụng DDD architecture cho phép switch database dễ dàng:
+
+1. **Cấu hình trong `.env`**:
+   ```env
+   DB_TYPE=postgres  # hoặc mongodb
+   ```
+
+2. **Khởi động database tương ứng**:
+   ```bash
+   docker-compose up -d postgres  # hoặc mongodb
+   ```
+
+3. **Khởi động application**:
+   ```bash
+   pnpm run start:dev
+   ```
+
+Xem hướng dẫn chi tiết trong [DATABASE_SWITCHING.md](./DATABASE_SWITCHING.md)
+
 ## Compile and run the project
 
 ```bash
