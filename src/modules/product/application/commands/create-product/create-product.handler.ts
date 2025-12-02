@@ -1,5 +1,7 @@
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
+import { Inject } from "@nestjs/common";
 import type { IProductRepository } from "src/modules/product/domain/repositories/product.repository.interface";
+import { ProductRepositoryToken } from "src/modules/product/domain/repositories/product.repository.interface";
 import { Product } from "src/modules/product/domain/entities/product.entity";
 import { ProductId } from "src/modules/product/domain/value-objects/product-id.vo";
 import { ProductName } from "src/modules/product/domain/value-objects/product-name.vo";
@@ -15,7 +17,10 @@ import { CreateProductResult } from "./create-product.result";
 export class CreateProductHandler
   implements ICommandHandler<CreateProductCommand, CreateProductResult>
 {
-  constructor(private readonly productRepository: IProductRepository) {}
+  constructor(
+    @Inject(ProductRepositoryToken)
+    private readonly productRepository: IProductRepository,
+  ) {}
 
   /**
    * Executes the create product command

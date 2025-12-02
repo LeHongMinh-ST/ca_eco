@@ -44,6 +44,19 @@ export class Product extends BaseEntity<ProductId> {
   }
 
   /**
+   * Reconstitutes Product from persistence layer
+   * Does not raise domain events (used when loading from database)
+   */
+  static reconstitute(
+    id: ProductId,
+    name: ProductName,
+    price: ProductPrice,
+    image: ProductImage,
+  ): Product {
+    return new Product(id, name, price, image);
+  }
+
+  /**
    * Updates product price and raises domain event if price changed
    */
   updatePrice(newPrice: ProductPrice): void {

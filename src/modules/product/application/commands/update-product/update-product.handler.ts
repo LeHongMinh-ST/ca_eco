@@ -1,6 +1,8 @@
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
+import { Inject } from "@nestjs/common";
 import { NotFoundError } from "src/shared/domain/errors/not-found.error";
 import type { IProductRepository } from "src/modules/product/domain/repositories/product.repository.interface";
+import { ProductRepositoryToken } from "src/modules/product/domain/repositories/product.repository.interface";
 import { ProductId } from "src/modules/product/domain/value-objects/product-id.vo";
 import { ProductName } from "src/modules/product/domain/value-objects/product-name.vo";
 import { ProductPrice } from "src/modules/product/domain/value-objects/product-price.vo";
@@ -14,7 +16,10 @@ import { UpdateProductCommand } from "./update-product.command";
 export class UpdateProductHandler
   implements ICommandHandler<UpdateProductCommand, void>
 {
-  constructor(private readonly productRepository: IProductRepository) {}
+  constructor(
+    @Inject(ProductRepositoryToken)
+    private readonly productRepository: IProductRepository,
+  ) {}
 
   /**
    * Executes the update product command

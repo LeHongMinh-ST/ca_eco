@@ -1,6 +1,8 @@
 import { QueryHandler, IQueryHandler } from "@nestjs/cqrs";
+import { Inject } from "@nestjs/common";
 import { NotFoundError } from "src/shared/domain/errors/not-found.error";
 import type { IProductRepository } from "src/modules/product/domain/repositories/product.repository.interface";
+import { ProductRepositoryToken } from "src/modules/product/domain/repositories/product.repository.interface";
 import { ProductId } from "src/modules/product/domain/value-objects/product-id.vo";
 import { GetProductByIdQuery } from "./get-product-by-id.query";
 import { ProductDto } from "../dtos/product.dto";
@@ -12,7 +14,10 @@ import { ProductDto } from "../dtos/product.dto";
 export class GetProductByIdHandler
   implements IQueryHandler<GetProductByIdQuery, ProductDto>
 {
-  constructor(private readonly productRepository: IProductRepository) {}
+  constructor(
+    @Inject(ProductRepositoryToken)
+    private readonly productRepository: IProductRepository,
+  ) {}
 
   /**
    * Executes the get product by ID query

@@ -1,5 +1,7 @@
 import { QueryHandler, IQueryHandler } from "@nestjs/cqrs";
+import { Inject } from "@nestjs/common";
 import type { IProductRepository } from "src/modules/product/domain/repositories/product.repository.interface";
+import { ProductRepositoryToken } from "src/modules/product/domain/repositories/product.repository.interface";
 import { GetAllProductsQuery } from "./get-all-products.query";
 import { ProductDto } from "../dtos/product.dto";
 
@@ -10,7 +12,10 @@ import { ProductDto } from "../dtos/product.dto";
 export class GetAllProductsHandler
   implements IQueryHandler<GetAllProductsQuery, ProductDto[]>
 {
-  constructor(private readonly productRepository: IProductRepository) {}
+  constructor(
+    @Inject(ProductRepositoryToken)
+    private readonly productRepository: IProductRepository,
+  ) {}
 
   /**
    * Executes the get all products query

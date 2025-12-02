@@ -1,1 +1,2 @@
-export { ProductRepository } from "./product.repository.interface";
+export type { IProductRepository } from "./product.repository.interface";
+export { ProductRepositoryToken } from "./product.repository.interface";
