@@ -51,6 +51,19 @@ export class Inventory extends BaseEntity<InventoryId> {
   }
 
   /**
+   * Reconstitutes Inventory from persistence layer
+   * Does not raise domain events (used when loading from database)
+   */
+  static reconstitute(
+    id: InventoryId,
+    productId: ProductId,
+    quantity: Quantity,
+    lowStockThreshold: number = 10,
+  ): Inventory {
+    return new Inventory(id, productId, quantity, lowStockThreshold);
+  }
+
+  /**
    * Increases inventory quantity by specified amount
    * Raises InventoryIncreased domain event
    */

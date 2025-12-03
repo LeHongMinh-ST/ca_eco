@@ -6,6 +6,7 @@ import { UserModule } from "./modules/user/user.module";
 import { OrderModule } from "./modules/order/order.module";
 import { ProductModule } from "./modules/product/product.module";
 import { CartModule } from "./modules/cart/cart.module";
+import { InventoryModule } from "./modules/inventory/inventory.module";
 import { DatabaseFactoryModule } from "./databases/database.factory";
 import { OutboxModule } from "./shared/infrastructure/outbox/outbox.module";
 
@@ -25,9 +26,10 @@ import { OutboxModule } from "./shared/infrastructure/outbox/outbox.module";
 
     // Domain modules
     UserModule.forRoot(),
-    OrderModule,
     ProductModule.forRoot(),
+    InventoryModule.forRoot(),
     CartModule.forRoot(),
+    OrderModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService],
