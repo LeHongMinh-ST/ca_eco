@@ -22,10 +22,10 @@ import { DatabaseFactoryModule } from "./databases/database.factory";
     // Domain modules
     UserModule,
     OrderModule,
-    ProductModule,
+    ProductModule.forRoot(),
     CartModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}
