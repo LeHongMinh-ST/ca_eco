@@ -1,5 +1,6 @@
 // comment: NestJS imports
 import { NestFactory } from "@nestjs/core";
+import { ValidationPipe } from "@nestjs/common";
 import { AppModule } from "./app.module";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 
@@ -8,6 +9,18 @@ async function bootstrap() {
 
   // comment: global prefix
   app.setGlobalPrefix("api");
+
+  // comment: Enable validation and transformation
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // Strip properties that don't have decorators
+      forbidNonWhitelisted: false, // Don't throw error for non-whitelisted properties
+      transform: true, // Automatically transform payloads to DTO instances
+      transformOptions: {
+        enableImplicitConversion: true, // Enable implicit type conversion
+      },
+    }),
+  );
 
   // comment: Swagger config
   const swaggerConfig = new DocumentBuilder()

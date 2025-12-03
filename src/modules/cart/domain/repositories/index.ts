@@ -1,4 +1,4 @@
 export {
-  ICartRepository,
+  type ICartRepository,
   CartRepositoryToken,
 } from "./cart.repository.interface";

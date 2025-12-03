@@ -1,5 +1,5 @@
 export {
-  IUserRepository,
+  type IUserRepository,
   UserRepositoryToken,
 } from "./user.repository.interface";
 

@@ -25,7 +25,7 @@ const dataSource = new DataSource({
   entities: [
     join(
       rootDir,
-      "src/modules/**/infrastructure/persistence/entities/*{.ts,.js}",
+      "src/modules/**/infrastructure/persistence/entities/*.orm-entity{.ts,.js}",
     ),
   ],
   migrations: [join(rootDir, "src/migrations/*{.ts,.js}")],

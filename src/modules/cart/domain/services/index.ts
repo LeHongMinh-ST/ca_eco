@@ -1,11 +1,11 @@
 export {
-  IProductServicePort,
-  ProductInfo,
+  type IProductServicePort,
+  type ProductInfo,
   ProductServicePortToken,
 } from "./product-service.port";
 
 export {
-  IUserServicePort,
-  UserInfo,
+  type IUserServicePort,
+  type UserInfo,
   UserServicePortToken,
 } from "./user-service.port";
