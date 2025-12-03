@@ -1,12 +1,16 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Global, Logger } from "@nestjs/common";
 import { IEventHandler } from "./event-handler.interface";
 
 /**
  * EventHandlersRegistry manages registration and retrieval of event handlers
  * Maps event types to their corresponding handlers
+ *
+ * Marked as Global to ensure single instance across all modules
  */
+@Global()
 @Injectable()
 export class EventHandlersRegistry {
+  private readonly logger = new Logger(EventHandlersRegistry.name);
   private readonly handlers: Map<string, IEventHandler[]> = new Map();
 
   /**
@@ -19,6 +23,9 @@ export class EventHandlersRegistry {
       this.handlers.set(eventType, []);
     }
     this.handlers.get(eventType)!.push(handler);
+    this.logger.log(
+      `Registered handler ${handler.constructor.name} for event type: ${eventType}. Total handlers for ${eventType}: ${this.handlers.get(eventType)!.length}`,
+    );
   }
 
   /**
@@ -27,7 +34,11 @@ export class EventHandlersRegistry {
    * @returns Array of event handlers, or empty array if none registered
    */
   getHandlers(eventType: string): IEventHandler[] {
-    return this.handlers.get(eventType) || [];
+    const handlers = this.handlers.get(eventType) || [];
+    this.logger.debug(
+      `Getting handlers for ${eventType}: found ${handlers.length} handlers. Registered event types: ${Array.from(this.handlers.keys()).join(", ")}`,
+    );
+    return handlers;
   }
 
   /**
@@ -38,4 +49,3 @@ export class EventHandlersRegistry {
     return Array.from(this.handlers.keys());
   }
 }
-

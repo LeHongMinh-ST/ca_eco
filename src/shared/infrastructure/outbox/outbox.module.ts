@@ -1,4 +1,4 @@
-import { DynamicModule, Module } from "@nestjs/common";
+import { DynamicModule, Module, Global } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { MongooseModule } from "@nestjs/mongoose";
 import { ScheduleModule } from "@nestjs/schedule";
@@ -26,6 +26,9 @@ import { DatabaseType } from "../../../databases/database.factory";
  * OutboxModule dynamically configures persistence layer based on DB_TYPE
  * Supports both PostgreSQL (TypeORM) and MongoDB (Mongoose)
  * Automatically selects appropriate repository based on environment variable
+ * 
+ * Note: EventHandlersRegistry is marked as Global to ensure single instance
+ * across all modules that register event handlers
  */
 @Module({})
 export class OutboxModule {
@@ -70,12 +73,13 @@ export class OutboxModule {
           provide: DomainEventDispatcherToken,
           useClass: OutboxEventDispatcher,
         },
-        // Event handlers registry
+        // Event handlers registry (Global singleton)
         EventHandlersRegistry,
         // Background processor
         OutboxProcessor,
       ],
       exports: [DomainEventDispatcherToken, EventHandlersRegistry],
+      global: true, // Make module global to ensure single instance
     };
   }
 }
