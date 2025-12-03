@@ -85,14 +85,9 @@ export class OrderCreatedHandler implements IEventHandler {
       }
 
       if (!items || items.length === 0) {
-        this.logger.warn(
-          `OrderCreated event has no items: ${orderIdValue}`,
-        );
+        this.logger.warn(`OrderCreated event has no items: ${orderIdValue}`);
         await this.eventDispatcher.dispatch(
-          new OrderFailed(
-            OrderId.create(orderIdValue),
-            "Order has no items",
-          ),
+          new OrderFailed(OrderId.create(orderIdValue), "Order has no items"),
         );
         return;
       }
@@ -113,9 +108,8 @@ export class OrderCreatedHandler implements IEventHandler {
 
       for (const item of items) {
         const productId = ProductId.create(item.productId);
-        const inventory = await this.inventoryRepository.findByProductId(
-          productId,
-        );
+        const inventory =
+          await this.inventoryRepository.findByProductId(productId);
 
         if (!inventory) {
           inventoryChecks.push({
@@ -138,7 +132,9 @@ export class OrderCreatedHandler implements IEventHandler {
 
       // Check if all items have sufficient inventory
       const insufficientStock = inventoryChecks.find(
-        (check) => !check.inventoryExists || check.availableQuantity < check.requiredQuantity,
+        (check) =>
+          !check.inventoryExists ||
+          check.availableQuantity < check.requiredQuantity,
       );
 
       if (insufficientStock) {
@@ -151,9 +147,7 @@ export class OrderCreatedHandler implements IEventHandler {
         );
 
         // Raise OrderFailed event
-        await this.eventDispatcher.dispatch(
-          new OrderFailed(orderId, reason),
-        );
+        await this.eventDispatcher.dispatch(new OrderFailed(orderId, reason));
         return;
       }
 
@@ -161,12 +155,13 @@ export class OrderCreatedHandler implements IEventHandler {
       try {
         for (const item of items) {
           const productId = ProductId.create(item.productId);
-          const inventory = await this.inventoryRepository.findByProductId(
-            productId,
-          );
+          const inventory =
+            await this.inventoryRepository.findByProductId(productId);
 
           if (!inventory) {
-            throw new Error(`Inventory not found for product: ${item.productId}`);
+            throw new Error(
+              `Inventory not found for product: ${item.productId}`,
+            );
           }
 
           // Decrease inventory (will throw error if insufficient stock)
@@ -195,7 +190,10 @@ export class OrderCreatedHandler implements IEventHandler {
 
         // Raise OrderFailed event
         await this.eventDispatcher.dispatch(
-          new OrderFailed(orderId, `Inventory decrease failed: ${errorMessage}`),
+          new OrderFailed(
+            orderId,
+            `Inventory decrease failed: ${errorMessage}`,
+          ),
         );
       }
     } catch (error) {
@@ -241,4 +239,3 @@ export class OrderCreatedHandler implements IEventHandler {
     }
   }
 }
-

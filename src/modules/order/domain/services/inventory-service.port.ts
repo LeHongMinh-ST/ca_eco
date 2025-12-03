@@ -44,4 +44,3 @@ export interface InventoryInfo {
  * Token for dependency injection
  */
 export const InventoryServicePortToken = "IInventoryServicePort";
-
