@@ -43,4 +43,3 @@ export const ProductSchema = SchemaFactory.createForClass(ProductMongoEntity);
 
 // Create index on name for better search performance
 ProductSchema.index({ name: "text" });
-

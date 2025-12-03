@@ -11,9 +11,10 @@ import { ProductDto } from "../dtos/product.dto";
  * GetProductByIdHandler handles the query to get a product by ID
  */
 @QueryHandler(GetProductByIdQuery)
-export class GetProductByIdHandler
-  implements IQueryHandler<GetProductByIdQuery, ProductDto>
-{
+export class GetProductByIdHandler implements IQueryHandler<
+  GetProductByIdQuery,
+  ProductDto
+> {
   constructor(
     @Inject(ProductRepositoryToken)
     private readonly productRepository: IProductRepository,
@@ -30,7 +31,11 @@ export class GetProductByIdHandler
 
     const product = await this.productRepository.findById(productId);
     if (!product) {
-      throw new NotFoundError("Product not found", "productId", productId.getValue());
+      throw new NotFoundError(
+        "Product not found",
+        "productId",
+        productId.getValue(),
+      );
     }
 
     return ProductDto.fromEntity(product);

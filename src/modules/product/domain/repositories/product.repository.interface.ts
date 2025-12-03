@@ -42,4 +42,4 @@ export interface IProductRepository {
   delete(id: ProductId): Promise<void>;
 }
 
-export const ProductRepositoryToken = "ProductRepository";
+export const ProductRepositoryToken = "IProductRepository";

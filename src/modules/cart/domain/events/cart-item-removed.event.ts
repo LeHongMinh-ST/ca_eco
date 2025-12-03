@@ -12,11 +12,7 @@ export class CartItemRemoved implements DomainEvent {
   readonly cartItemId: CartItemId;
   readonly productId: string;
 
-  constructor(
-    cartId: CartId,
-    cartItemId: CartItemId,
-    productId: string,
-  ) {
+  constructor(cartId: CartId, cartItemId: CartItemId, productId: string) {
     this.cartId = cartId;
     this.cartItemId = cartItemId;
     this.productId = productId;

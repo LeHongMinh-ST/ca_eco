@@ -6,12 +6,10 @@ import { BaseVo } from "./base-vo.vo";
  * Domain specific IDs should extend this class for consistent behaviour
  */
 export abstract class BaseId extends BaseVo<string> {
-
   protected constructor(value: string) {
     BaseId.ensureValidUuid(value);
     super(value);
   }
-
 
   /**
    * Checks equality between two identifiers
@@ -31,4 +29,3 @@ export abstract class BaseId extends BaseVo<string> {
     }
   }
 }
-

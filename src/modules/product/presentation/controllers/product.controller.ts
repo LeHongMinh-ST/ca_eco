@@ -36,15 +36,18 @@ export class ProductController {
    */
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() createProductDto: CreateProductDto): Promise<CreateProductResult> {
+  async create(
+    @Body() createProductDto: CreateProductDto,
+  ): Promise<CreateProductResult> {
     const command = new CreateProductCommand(
       createProductDto.name,
       createProductDto.price,
       createProductDto.image,
     );
-    return await this.commandBus.execute<CreateProductCommand, CreateProductResult>(
-      command,
-    );
+    return await this.commandBus.execute<
+      CreateProductCommand,
+      CreateProductResult
+    >(command);
   }
 
   /**
@@ -54,7 +57,9 @@ export class ProductController {
   @Get()
   async findAll(): Promise<ProductDto[]> {
     const query = new GetAllProductsQuery();
-    return await this.queryBus.execute<GetAllProductsQuery, ProductDto[]>(query);
+    return await this.queryBus.execute<GetAllProductsQuery, ProductDto[]>(
+      query,
+    );
   }
 
   /**

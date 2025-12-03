@@ -1,6 +1,6 @@
 import { DomainEvent } from "src/shared/domain/interfaces/domain-event.interface";
 import { CartId } from "../value-objects/cart-id.vo";
-import { UserId } from "src/modules/user/domain/value-objects/user-id.vo";
+import { UserId } from "../value-objects/user-id.vo";
 
 /**
  * CartCreated domain event is raised when a new cart is created

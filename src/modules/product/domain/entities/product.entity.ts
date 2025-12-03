@@ -66,9 +66,7 @@ export class Product extends BaseEntity<ProductId> {
 
     const oldPrice = this.price;
     this.price = newPrice;
-    this.recordEvent(
-      new ProductPriceUpdated(this.getId(), oldPrice, newPrice),
-    );
+    this.recordEvent(new ProductPriceUpdated(this.getId(), oldPrice, newPrice));
   }
 
   /**

@@ -9,9 +9,10 @@ import { ProductDto } from "../dtos/product.dto";
  * GetAllProductsHandler handles the query to get all products
  */
 @QueryHandler(GetAllProductsQuery)
-export class GetAllProductsHandler
-  implements IQueryHandler<GetAllProductsQuery, ProductDto[]>
-{
+export class GetAllProductsHandler implements IQueryHandler<
+  GetAllProductsQuery,
+  ProductDto[]
+> {
   constructor(
     @Inject(ProductRepositoryToken)
     private readonly productRepository: IProductRepository,

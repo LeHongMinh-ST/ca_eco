@@ -6,11 +6,9 @@
 import { DomainEvent } from "../interfaces/domain-event.interface";
 import { BaseId } from "../value-objects/base-id.vo";
 
-
 export abstract class BaseEntity<TId extends BaseId> {
   private readonly id: TId;
   private domainEvents: DomainEvent[] = [];
-
 
   protected constructor(id: TId) {
     this.id = id;
@@ -33,14 +31,10 @@ export abstract class BaseEntity<TId extends BaseId> {
     return events;
   }
 
-
   /**
    * Records domain event for later publication
    */
   protected recordEvent(event: DomainEvent): void {
-
     this.domainEvents.push(event);
-
   }
 }
-

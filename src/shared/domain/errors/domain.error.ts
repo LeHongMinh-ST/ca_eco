@@ -44,9 +44,7 @@ export abstract class DomainError extends Error {
    * Useful for logging and serialization
    */
   toJSON(): Record<string, unknown> {
-
     return {
-
       name: this.name,
       code: this.code,
       message: this.message,
@@ -54,7 +52,5 @@ export abstract class DomainError extends Error {
       occurredAt: this.occurredAt.toISOString(),
       stack: this.stack,
     };
-
   }
 }
-

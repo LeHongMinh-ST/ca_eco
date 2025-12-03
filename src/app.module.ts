@@ -23,7 +23,7 @@ import { DatabaseFactoryModule } from "./databases/database.factory";
     UserModule,
     OrderModule,
     ProductModule.forRoot(),
-    CartModule,
+    CartModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService],

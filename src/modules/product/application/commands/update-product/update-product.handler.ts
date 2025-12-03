@@ -13,9 +13,10 @@ import { UpdateProductCommand } from "./update-product.command";
  * UpdateProductHandler handles the update of an existing product
  */
 @CommandHandler(UpdateProductCommand)
-export class UpdateProductHandler
-  implements ICommandHandler<UpdateProductCommand, void>
-{
+export class UpdateProductHandler implements ICommandHandler<
+  UpdateProductCommand,
+  void
+> {
   constructor(
     @Inject(ProductRepositoryToken)
     private readonly productRepository: IProductRepository,
@@ -33,7 +34,11 @@ export class UpdateProductHandler
     // Find existing product
     const product = await this.productRepository.findById(productId);
     if (!product) {
-      throw new NotFoundError("Product not found", "productId", productId.getValue());
+      throw new NotFoundError(
+        "Product not found",
+        "productId",
+        productId.getValue(),
+      );
     }
 
     // Update fields if provided

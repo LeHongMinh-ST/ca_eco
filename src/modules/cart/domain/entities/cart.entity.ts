@@ -1,6 +1,6 @@
 import { InvalidInputError } from "src/shared/domain/errors/invalid-input.error";
 import { BaseEntity } from "src/shared/domain/entities/base.entity";
-import { UserId } from "src/modules/user/domain/value-objects/user-id.vo";
+import { UserId } from "../value-objects/user-id.vo";
 import { CartCleared } from "../events/cart-cleared.event";
 import { CartCreated } from "../events/cart-created.event";
 import { CartItemAdded } from "../events/cart-item-added.event";
@@ -34,6 +34,14 @@ export class Cart extends BaseEntity<CartId> {
     const cart = new Cart(id, userId);
     cart.recordEvent(new CartCreated(id, userId));
     return cart;
+  }
+
+  /**
+   * Reconstitutes Cart from persistence layer
+   * Does not raise domain events (used when loading from database)
+   */
+  static reconstitute(id: CartId, userId: UserId): Cart {
+    return new Cart(id, userId);
   }
 
   /**
@@ -114,9 +122,7 @@ export class Cart extends BaseEntity<CartId> {
     const productId = item.getProductSnapshot().productId;
     this.items.delete(itemId.getValue());
 
-    this.recordEvent(
-      new CartItemRemoved(this.getId(), itemId, productId),
-    );
+    this.recordEvent(new CartItemRemoved(this.getId(), itemId, productId));
   }
 
   /**

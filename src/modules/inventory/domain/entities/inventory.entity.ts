@@ -72,9 +72,7 @@ export class Inventory extends BaseEntity<InventoryId> {
     }
 
     const oldQuantity = this.quantity;
-    const newQuantity = Quantity.create(
-      this.quantity.getValue() + amount,
-    );
+    const newQuantity = Quantity.create(this.quantity.getValue() + amount);
     this.quantity = newQuantity;
 
     this.recordEvent(
@@ -124,9 +122,7 @@ export class Inventory extends BaseEntity<InventoryId> {
 
     // Check if inventory becomes out of stock
     if (newQuantity.getValue() === 0) {
-      this.recordEvent(
-        new InventoryOutOfStock(this.getId(), this.productId),
-      );
+      this.recordEvent(new InventoryOutOfStock(this.getId(), this.productId));
     }
     // Check if inventory falls below threshold
     else if (
@@ -172,9 +168,7 @@ export class Inventory extends BaseEntity<InventoryId> {
 
       // Check for out of stock
       if (newValue === 0) {
-        this.recordEvent(
-          new InventoryOutOfStock(this.getId(), this.productId),
-        );
+        this.recordEvent(new InventoryOutOfStock(this.getId(), this.productId));
       }
       // Check for low stock
       else if (

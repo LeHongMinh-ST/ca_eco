@@ -19,4 +19,3 @@ import { getDatabaseConfig } from "./database.config";
   exports: [TypeOrmModule],
 })
 export class PostgreSQLModule {}
-

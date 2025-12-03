@@ -57,7 +57,10 @@ export class ProductImage extends BaseVo<string> {
     }
 
     // Optional: Validate URL format if it looks like a URL
-    if (trimmedValue.startsWith("http://") || trimmedValue.startsWith("https://")) {
+    if (
+      trimmedValue.startsWith("http://") ||
+      trimmedValue.startsWith("https://")
+    ) {
       try {
         new URL(trimmedValue);
       } catch {

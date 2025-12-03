@@ -10,9 +10,10 @@ import { DeleteProductCommand } from "./delete-product.command";
  * DeleteProductHandler handles the deletion of a product
  */
 @CommandHandler(DeleteProductCommand)
-export class DeleteProductHandler
-  implements ICommandHandler<DeleteProductCommand, void>
-{
+export class DeleteProductHandler implements ICommandHandler<
+  DeleteProductCommand,
+  void
+> {
   constructor(
     @Inject(ProductRepositoryToken)
     private readonly productRepository: IProductRepository,
@@ -30,7 +31,11 @@ export class DeleteProductHandler
     // Check if product exists
     const exists = await this.productRepository.exists(productId);
     if (!exists) {
-      throw new NotFoundError("Product not found", "productId", productId.getValue());
+      throw new NotFoundError(
+        "Product not found",
+        "productId",
+        productId.getValue(),
+      );
     }
 
     // Delete product

@@ -99,8 +99,6 @@ export class CartItem {
     if (!other) {
       return false;
     }
-    return (
-      this.productSnapshot.productId === other.productSnapshot.productId
-    );
+    return this.productSnapshot.productId === other.productSnapshot.productId;
   }
 }

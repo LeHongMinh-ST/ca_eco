@@ -14,9 +14,10 @@ import { CreateProductResult } from "./create-product.result";
  * CreateProductHandler handles the creation of a new product
  */
 @CommandHandler(CreateProductCommand)
-export class CreateProductHandler
-  implements ICommandHandler<CreateProductCommand, CreateProductResult>
-{
+export class CreateProductHandler implements ICommandHandler<
+  CreateProductCommand,
+  CreateProductResult
+> {
   constructor(
     @Inject(ProductRepositoryToken)
     private readonly productRepository: IProductRepository,
