@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Inject } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { ICartRepository } from "src/modules/cart/domain/repositories/cart.repository.interface";
@@ -10,6 +10,8 @@ import {
   CartMongoEntity,
   CartDocument,
 } from "../entities/cart.schema";
+import type { IDomainEventDispatcher } from "src/shared/application/events/domain-event-dispatcher.interface";
+import { DomainEventDispatcherToken } from "src/shared/application/events/domain-event-dispatcher.interface";
 
 /**
  * CartMongoRepository implements ICartRepository using Mongoose
@@ -20,11 +22,14 @@ export class CartMongoRepository implements ICartRepository {
   constructor(
     @InjectModel(CartMongoEntity.name)
     private readonly mongoModel: Model<CartDocument>,
+    @Inject(DomainEventDispatcherToken)
+    private readonly eventDispatcher: IDomainEventDispatcher,
   ) {}
 
   /**
    * Saves a cart entity
    * Creates new cart if not exists, updates if exists
+   * Dispatches domain events to outbox
    * @param cart - Cart entity to save
    * @returns Promise that resolves when save is complete
    */
@@ -35,6 +40,12 @@ export class CartMongoRepository implements ICartRepository {
       mongoEntity,
       { upsert: true, new: true },
     );
+
+    // Pull and dispatch domain events
+    const domainEvents = cart.pullDomainEvents();
+    for (const event of domainEvents) {
+      await this.eventDispatcher.dispatch(event);
+    }
   }
 
   /**

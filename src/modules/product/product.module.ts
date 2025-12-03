@@ -17,6 +17,9 @@ import {
 import { ProductMongoRepository } from "./infrastructure/persistence/repositories/product.mongo-repository";
 import { ProductRepositoryToken } from "./domain/repositories/product.repository.interface";
 import { DatabaseType } from "../../databases/database.factory";
+import { ProductCreatedHandler } from "./application/events/product-created.handler";
+import { EventHandlersRegistry } from "../../shared/application/events/event-handlers-registry";
+import { OutboxModule } from "../../shared/infrastructure/outbox/outbox.module";
 
 /**
  * ProductModule dynamically configures persistence layer based on DB_TYPE
@@ -36,7 +39,7 @@ export class ProductModule {
     let repositoryClass:
       | typeof ProductMongoRepository
       | typeof ProductRepository;
-    const imports: any[] = [CqrsModule];
+    const imports: any[] = [CqrsModule, OutboxModule.forRoot()];
 
     switch (dbType) {
       case DatabaseType.MONGODB.toLowerCase():
@@ -67,6 +70,20 @@ export class ProductModule {
         {
           provide: ProductRepositoryToken,
           useClass: repositoryClass,
+        },
+        // Event handlers
+        ProductCreatedHandler,
+        // Register event handler with registry
+        {
+          provide: "REGISTER_PRODUCT_CREATED_HANDLER",
+          useFactory: (
+            handler: ProductCreatedHandler,
+            registry: EventHandlersRegistry,
+          ) => {
+            registry.register("ProductCreated", handler);
+            return handler;
+          },
+          inject: [ProductCreatedHandler, EventHandlersRegistry],
         },
       ],
       exports: [ProductRepositoryToken],

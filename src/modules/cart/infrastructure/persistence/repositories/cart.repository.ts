@@ -1,12 +1,14 @@
-import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Injectable, Inject } from "@nestjs/common";
+import { InjectRepository, InjectDataSource } from "@nestjs/typeorm";
+import { Repository, DataSource } from "typeorm";
 import { ICartRepository } from "src/modules/cart/domain/repositories/cart.repository.interface";
 import { Cart } from "src/modules/cart/domain/entities/cart.entity";
 import { CartId } from "src/modules/cart/domain/value-objects/cart-id.vo";
 import { UserId } from "src/modules/cart/domain/value-objects/user-id.vo";
 import { CartMapper } from "../mappers/cart.mapper";
 import { CartOrmEntity } from "../entities/cart.orm-entity";
+import type { IDomainEventDispatcher } from "src/shared/application/events/domain-event-dispatcher.interface";
+import { DomainEventDispatcherToken } from "src/shared/application/events/domain-event-dispatcher.interface";
 
 /**
  * CartRepository implements ICartRepository using TypeORM
@@ -17,17 +19,41 @@ export class CartRepository implements ICartRepository {
   constructor(
     @InjectRepository(CartOrmEntity)
     private readonly ormRepository: Repository<CartOrmEntity>,
+    @Inject(DomainEventDispatcherToken)
+    private readonly eventDispatcher: IDomainEventDispatcher,
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
   ) {}
 
   /**
    * Saves a cart entity
    * Creates new cart if not exists, updates if exists
+   * Dispatches domain events to outbox in the same transaction
    * @param cart - Cart entity to save
    * @returns Promise that resolves when save is complete
    */
   async save(cart: Cart): Promise<void> {
-    const ormEntity = CartMapper.toPersistence(cart);
-    await this.ormRepository.save(ormEntity);
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const ormEntity = CartMapper.toPersistence(cart);
+      await queryRunner.manager.save(CartOrmEntity, ormEntity);
+
+      // Pull and dispatch domain events in the same transaction
+      const domainEvents = cart.pullDomainEvents();
+      for (const event of domainEvents) {
+        await this.eventDispatcher.dispatch(event);
+      }
+
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   /**

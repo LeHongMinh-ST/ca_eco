@@ -1,12 +1,14 @@
-import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Injectable, Inject } from "@nestjs/common";
+import { InjectRepository, InjectDataSource } from "@nestjs/typeorm";
+import { Repository, DataSource } from "typeorm";
 import { IUserRepository } from "src/modules/user/domain/repositories/user.repository.interface";
 import { User } from "src/modules/user/domain/entities/user.entity";
 import { UserId } from "src/modules/user/domain/value-objects/user-id.vo";
 import { UserEmail } from "src/modules/user/domain/value-objects/user-email.vo";
 import { UserMapper } from "../mappers/user.mapper";
 import { UserOrmEntity } from "../entities/user.orm-entity";
+import type { IDomainEventDispatcher } from "src/shared/application/events/domain-event-dispatcher.interface";
+import { DomainEventDispatcherToken } from "src/shared/application/events/domain-event-dispatcher.interface";
 
 /**
  * UserRepository implements IUserRepository using TypeORM
@@ -17,17 +19,41 @@ export class UserRepository implements IUserRepository {
   constructor(
     @InjectRepository(UserOrmEntity)
     private readonly ormRepository: Repository<UserOrmEntity>,
+    @Inject(DomainEventDispatcherToken)
+    private readonly eventDispatcher: IDomainEventDispatcher,
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
   ) {}
 
   /**
    * Saves a user entity
    * Creates new user if not exists, updates if exists
+   * Dispatches domain events to outbox in the same transaction
    * @param user - User entity to save
    * @returns Promise that resolves when save is complete
    */
   async save(user: User): Promise<void> {
-    const ormEntity = UserMapper.toPersistence(user);
-    await this.ormRepository.save(ormEntity);
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const ormEntity = UserMapper.toPersistence(user);
+      await queryRunner.manager.save(UserOrmEntity, ormEntity);
+
+      // Pull and dispatch domain events in the same transaction
+      const domainEvents = user.pullDomainEvents();
+      for (const event of domainEvents) {
+        await this.eventDispatcher.dispatch(event);
+      }
+
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   /**
@@ -93,4 +119,3 @@ export class UserRepository implements IUserRepository {
     await this.ormRepository.delete(id.getValue());
   }
 }
-

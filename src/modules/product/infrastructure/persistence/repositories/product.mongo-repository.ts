@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Inject } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { IProductRepository } from "src/modules/product/domain/repositories/product.repository.interface";
@@ -9,6 +9,8 @@ import {
   ProductMongoEntity,
   ProductDocument,
 } from "../entities/product.schema";
+import type { IDomainEventDispatcher } from "src/shared/application/events/domain-event-dispatcher.interface";
+import { DomainEventDispatcherToken } from "src/shared/application/events/domain-event-dispatcher.interface";
 
 /**
  * ProductMongoRepository implements IProductRepository using Mongoose
@@ -19,11 +21,14 @@ export class ProductMongoRepository implements IProductRepository {
   constructor(
     @InjectModel(ProductMongoEntity.name)
     private readonly mongoModel: Model<ProductDocument>,
+    @Inject(DomainEventDispatcherToken)
+    private readonly eventDispatcher: IDomainEventDispatcher,
   ) {}
 
   /**
    * Saves a product entity
    * Creates new product if not exists, updates if exists
+   * Dispatches domain events to outbox
    * @param product - Product entity to save
    * @returns Promise that resolves when save is complete
    */
@@ -34,6 +39,12 @@ export class ProductMongoRepository implements IProductRepository {
       mongoEntity,
       { upsert: true, new: true },
     );
+
+    // Pull and dispatch domain events
+    const domainEvents = product.pullDomainEvents();
+    for (const event of domainEvents) {
+      await this.eventDispatcher.dispatch(event);
+    }
   }
 
   /**
@@ -57,7 +68,11 @@ export class ProductMongoRepository implements IProductRepository {
    */
   async findAll(): Promise<Product[]> {
     const documents = await this.mongoModel.find().exec();
-    return documents.map((document) => ProductMongoMapper.toDomain(document));
+    const products: Product[] = [];
+    for (const document of documents) {
+      products.push(ProductMongoMapper.toDomain(document));
+    }
+    return products;
   }
 
   /**
