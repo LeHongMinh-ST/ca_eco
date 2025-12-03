@@ -1,10 +1,9 @@
-import { DynamicModule, Module } from "@nestjs/common";
+import { DynamicModule, Module, forwardRef } from "@nestjs/common";
 import { CqrsModule } from "@nestjs/cqrs";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { MongooseModule } from "@nestjs/mongoose";
 import { ProductModule } from "../product/product.module";
-// Import UserModule when UserRepository is available
-// import { UserModule } from "../user/user.module";
+import { UserModule } from "../user/user.module";
 import { CreateCartHandler } from "./application/commands/create-cart/create-cart.handler";
 import { AddItemToCartHandler } from "./application/commands/add-item-to-cart/add-item-to-cart.handler";
 import { UpdateItemQuantityHandler } from "./application/commands/update-item-quantity/update-item-quantity.handler";
@@ -44,7 +43,11 @@ export class CartModule {
     const dbType = (process.env.DB_TYPE || DatabaseType.POSTGRES).toLowerCase();
 
     let repositoryClass: typeof CartMongoRepository | typeof CartRepository;
-    const imports: any[] = [CqrsModule, ProductModule.forRoot()];
+    const imports: any[] = [
+      CqrsModule,
+      ProductModule.forRoot(),
+      forwardRef(() => UserModule),
+    ];
 
     switch (dbType) {
       case DatabaseType.MONGODB.toLowerCase():

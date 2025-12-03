@@ -20,7 +20,7 @@ import { DatabaseFactoryModule } from "./databases/database.factory";
     DatabaseFactoryModule.forRoot(),
 
     // Domain modules
-    UserModule,
+    UserModule.forRoot(),
     OrderModule,
     ProductModule.forRoot(),
     CartModule.forRoot(),

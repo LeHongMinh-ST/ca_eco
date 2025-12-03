@@ -1,12 +1,11 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Inject, Optional } from "@nestjs/common";
 import {
   IUserServicePort,
   UserInfo,
 } from "../../domain/services/user-service.port";
-// Note: Cần tạo UserRepositoryToken trong User module nếu chưa có
-// import type { IUserRepository } from "src/modules/user/domain/repositories/user.repository.interface";
-// import { UserRepositoryToken } from "src/modules/user/domain/repositories/user.repository.interface";
-// import { UserId as UserDomainUserId } from "src/modules/user/domain/value-objects/user-id.vo";
+import type { IUserRepository } from "src/modules/user/domain/repositories/user.repository.interface";
+import { UserRepositoryToken } from "src/modules/user/domain/repositories/user.repository.interface";
+import { UserId } from "src/modules/user/domain/value-objects/user-id.vo";
 
 /**
  * UserServiceAdapter implements IUserServicePort
@@ -15,27 +14,32 @@ import {
  */
 @Injectable()
 export class UserServiceAdapter implements IUserServicePort {
-  constructor() {
-    // Inject UserRepository khi User module có repository
-    // @Inject(UserRepositoryToken)
-    // private readonly userRepository: IUserRepository,
-  }
+  constructor(
+    @Optional()
+    @Inject(UserRepositoryToken)
+    private readonly userRepository?: IUserRepository,
+  ) {}
 
   /**
    * Validates if a user exists
-   * @param _userId - User identifier string (unused in temporary implementation)
+   * @param userId - User identifier string
    * @returns Promise that resolves to true if user exists, false otherwise
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  userExists(_userId: string): Promise<boolean> {
-    // TODO: Implement when UserRepository is available
-    // const id = UserDomainUserId.create(userId);
-    // const user = await this.userRepository.findById(id);
-    // return user !== undefined;
+  async userExists(userId: string): Promise<boolean> {
+    if (!this.userRepository) {
+      // Fallback: return true if repository is not available
+      // This allows cart module to work even if user infrastructure is not ready
+      return true;
+    }
 
-    // Temporary: Always return true for now
-    // In production, this should call UserRepository
-    return Promise.resolve(true);
+    try {
+      const id = UserId.create(userId);
+      const user = await this.userRepository.findById(id);
+      return user !== undefined;
+    } catch {
+      // If user ID is invalid, user doesn't exist
+      return false;
+    }
   }
 
   /**
@@ -43,22 +47,30 @@ export class UserServiceAdapter implements IUserServicePort {
    * @param userId - User identifier string
    * @returns Promise that resolves to UserInfo or undefined if not found
    */
-  getUserInfo(userId: string): Promise<UserInfo | undefined> {
-    // TODO: Implement when UserRepository is available
-    // const id = UserDomainUserId.create(userId);
-    // const user = await this.userRepository.findById(id);
-    // if (!user) {
-    //   return undefined;
-    // }
-    // return {
-    //   id: user.getId().getValue(),
-    //   email: user.getEmail()?.getValue(),
-    //   name: user.getName()?.getValue(),
-    // };
+  async getUserInfo(userId: string): Promise<UserInfo | undefined> {
+    if (!this.userRepository) {
+      // Fallback: return basic info if repository is not available
+      return {
+        id: userId,
+      };
+    }
 
-    // Temporary: Return basic info
-    return Promise.resolve({
-      id: userId,
-    });
+    try {
+      const id = UserId.create(userId);
+      const user = await this.userRepository.findById(id);
+
+      if (!user) {
+        return undefined;
+      }
+
+      return {
+        id: user.getId().getValue(),
+        email: user.getEmail().getValue(),
+        name: user.getName().getValue(),
+      };
+    } catch {
+      // If user ID is invalid or error occurs, return undefined
+      return undefined;
+    }
   }
 }
