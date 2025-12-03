@@ -8,6 +8,7 @@ import { UserId } from "src/modules/user/domain/value-objects/user-id.vo";
 import { UserEmail } from "src/modules/user/domain/value-objects/user-email.vo";
 import { UserName } from "src/modules/user/domain/value-objects/user-name.vo";
 import { UserPassword } from "src/modules/user/domain/value-objects/user-password.vo";
+import { PasswordHasherService } from "src/modules/user/infrastructure/services/password-hasher.service";
 import { CreateUserCommand } from "./create-user.command";
 import { CreateUserResult } from "./create-user.result";
 
@@ -22,6 +23,7 @@ export class CreateUserHandler implements ICommandHandler<
   constructor(
     @Inject(UserRepositoryToken)
     private readonly userRepository: IUserRepository,
+    private readonly passwordHasher: PasswordHasherService,
   ) {}
 
   /**
@@ -49,9 +51,12 @@ export class CreateUserHandler implements ICommandHandler<
 
     // Create value objects
     const name = UserName.create(command.name);
-    // Note: Password should be hashed in infrastructure layer before creating UserPassword
-    // For now, we'll create it directly - infrastructure layer will handle hashing
-    const password = UserPassword.create(command.password);
+
+    // Hash password before creating UserPassword value object
+    const hashedPassword = await this.passwordHasher.hashPassword(
+      command.password,
+    );
+    const password = UserPassword.create(hashedPassword);
 
     // Create user entity
     const user = User.create(userId, email, name, password);

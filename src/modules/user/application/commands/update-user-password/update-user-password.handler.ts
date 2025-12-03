@@ -5,6 +5,7 @@ import type { IUserRepository } from "src/modules/user/domain/repositories/user.
 import { UserRepositoryToken } from "src/modules/user/domain/repositories/user.repository.interface";
 import { UserId } from "src/modules/user/domain/value-objects/user-id.vo";
 import { UserPassword } from "src/modules/user/domain/value-objects/user-password.vo";
+import { PasswordHasherService } from "src/modules/user/infrastructure/services/password-hasher.service";
 import { UpdateUserPasswordCommand } from "./update-user-password.command";
 
 /**
@@ -18,6 +19,7 @@ export class UpdateUserPasswordHandler implements ICommandHandler<
   constructor(
     @Inject(UserRepositoryToken)
     private readonly userRepository: IUserRepository,
+    private readonly passwordHasher: PasswordHasherService,
   ) {}
 
   /**
@@ -39,9 +41,11 @@ export class UpdateUserPasswordHandler implements ICommandHandler<
       );
     }
 
-    // Update password
-    // Note: Password should be hashed in infrastructure layer before creating UserPassword
-    const password = UserPassword.create(command.password);
+    // Hash password before creating UserPassword value object
+    const hashedPassword = await this.passwordHasher.hashPassword(
+      command.password,
+    );
+    const password = UserPassword.create(hashedPassword);
     user.updatePassword(password);
 
     // Save updated user

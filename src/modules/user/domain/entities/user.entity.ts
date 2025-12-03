@@ -38,7 +38,7 @@ export class User extends BaseEntity<UserId> {
     name: UserName,
     password: UserPassword,
   ): User {
-    const user = new User(id, email, name, password);
+    const user = User.reconstitute(id, email, name, password);
     user.recordEvent(new UserCreated(id));
     return user;
   }

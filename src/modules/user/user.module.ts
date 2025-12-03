@@ -6,6 +6,7 @@ import { CreateUserHandler } from "./application/commands/create-user/create-use
 import { UpdateUserEmailHandler } from "./application/commands/update-user-email/update-user-email.handler";
 import { UpdateUserNameHandler } from "./application/commands/update-user-name/update-user-name.handler";
 import { UpdateUserPasswordHandler } from "./application/commands/update-user-password/update-user-password.handler";
+import { PasswordHasherService } from "./infrastructure/services/password-hasher.service";
 import { DeleteUserHandler } from "./application/commands/delete-user/delete-user.handler";
 import { GetUserByIdHandler } from "./application/queries/get-user-by-id/get-user-by-id.handler";
 import { GetUserByEmailHandler } from "./application/queries/get-user-by-email/get-user-by-email.handler";
@@ -74,6 +75,8 @@ export class UserModule {
           provide: UserRepositoryToken,
           useClass: repositoryClass,
         },
+        // Password hasher service
+        PasswordHasherService,
       ],
       exports: [UserRepositoryToken],
     };
