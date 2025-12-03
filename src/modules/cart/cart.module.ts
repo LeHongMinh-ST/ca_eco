@@ -26,6 +26,8 @@ import { UserServiceAdapter } from "./infrastructure/adapters/user-service.adapt
 import { UserServicePortToken } from "./domain/services/user-service.port";
 import { DatabaseType } from "../../databases/database.factory";
 import { OutboxModule } from "../../shared/infrastructure/outbox/outbox.module";
+import { UserCreatedHandler } from "./application/events/user-created.handler";
+import { EventHandlersRegistry } from "../../shared/application/events/event-handlers-registry";
 
 /**
  * CartModule dynamically configures persistence layer based on DB_TYPE
@@ -94,6 +96,20 @@ export class CartModule {
         {
           provide: UserServicePortToken,
           useClass: UserServiceAdapter,
+        },
+        // Event handlers
+        UserCreatedHandler,
+        // Register event handler with registry
+        {
+          provide: "REGISTER_USER_CREATED_HANDLER",
+          useFactory: (
+            handler: UserCreatedHandler,
+            registry: EventHandlersRegistry,
+          ) => {
+            registry.register("UserCreated", handler);
+            return handler;
+          },
+          inject: [UserCreatedHandler, EventHandlersRegistry],
         },
       ],
       exports: [CartRepositoryToken],

@@ -1,14 +1,17 @@
-import { Injectable, Inject } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository, InjectDataSource } from "@nestjs/typeorm";
-import { Repository, DataSource } from "typeorm";
+import { Repository, DataSource, QueryRunner } from "typeorm";
 import { IUserRepository } from "src/modules/user/domain/repositories/user.repository.interface";
 import { User } from "src/modules/user/domain/entities/user.entity";
 import { UserId } from "src/modules/user/domain/value-objects/user-id.vo";
 import { UserEmail } from "src/modules/user/domain/value-objects/user-email.vo";
 import { UserMapper } from "../mappers/user.mapper";
 import { UserOrmEntity } from "../entities/user.orm-entity";
-import type { IDomainEventDispatcher } from "src/shared/application/events/domain-event-dispatcher.interface";
-import { DomainEventDispatcherToken } from "src/shared/application/events/domain-event-dispatcher.interface";
+import { DomainEvent } from "src/shared/domain/interfaces/domain-event.interface";
+import {
+  OutboxEventOrmEntity,
+  OutboxEventStatus,
+} from "src/shared/infrastructure/outbox/outbox-event.orm-entity";
 
 /**
  * UserRepository implements IUserRepository using TypeORM
@@ -19,8 +22,6 @@ export class UserRepository implements IUserRepository {
   constructor(
     @InjectRepository(UserOrmEntity)
     private readonly ormRepository: Repository<UserOrmEntity>,
-    @Inject(DomainEventDispatcherToken)
-    private readonly eventDispatcher: IDomainEventDispatcher,
     @InjectDataSource()
     private readonly dataSource: DataSource,
   ) {}
@@ -42,9 +43,10 @@ export class UserRepository implements IUserRepository {
       await queryRunner.manager.save(UserOrmEntity, ormEntity);
 
       // Pull and dispatch domain events in the same transaction
+      // Save events directly to outbox using queryRunner.manager to ensure same transaction
       const domainEvents = user.pullDomainEvents();
       for (const event of domainEvents) {
-        await this.eventDispatcher.dispatch(event);
+        await this.saveEventToOutbox(queryRunner, event);
       }
 
       await queryRunner.commitTransaction();
@@ -117,5 +119,79 @@ export class UserRepository implements IUserRepository {
    */
   async delete(id: UserId): Promise<void> {
     await this.ormRepository.delete(id.getValue());
+  }
+
+  /**
+   * Saves domain event to outbox in the same transaction
+   * @param queryRunner - QueryRunner for the current transaction
+   * @param event - Domain event to save
+   */
+  private async saveEventToOutbox(
+    queryRunner: QueryRunner,
+    event: DomainEvent,
+  ): Promise<void> {
+    const aggregateId = this.extractAggregateId(event);
+    const payload = this.serializeEvent(event);
+
+    const outboxEvent = new OutboxEventOrmEntity();
+    outboxEvent.aggregateId = aggregateId;
+    outboxEvent.eventType = event.name;
+    outboxEvent.payload = payload;
+    outboxEvent.status = OutboxEventStatus.PENDING;
+    outboxEvent.retryCount = 0;
+
+    await queryRunner.manager.save(OutboxEventOrmEntity, outboxEvent);
+  }
+
+  /**
+   * Extracts aggregate ID from domain event
+   */
+  private extractAggregateId(event: DomainEvent): string {
+    const eventAny = event as unknown as Record<string, unknown>;
+    if (eventAny.userId) {
+      const userId = eventAny.userId;
+      if (typeof userId === "string") {
+        return userId;
+      }
+      if (
+        typeof userId === "object" &&
+        userId !== null &&
+        "getValue" in userId &&
+        typeof (userId as { getValue: () => string }).getValue === "function"
+      ) {
+        return (userId as { getValue: () => string }).getValue();
+      }
+    }
+    return event.name;
+  }
+
+  /**
+   * Serializes domain event to JSON payload
+   */
+  private serializeEvent(event: DomainEvent): Record<string, unknown> {
+    const payload: Record<string, unknown> = {
+      name: event.name,
+      occurredAt: event.occurredAt.toISOString(),
+    };
+
+    const eventAny = event as unknown as Record<string, unknown>;
+    for (const key in eventAny) {
+      if (key !== "name" && key !== "occurredAt") {
+        const value = eventAny[key];
+        if (
+          value &&
+          typeof value === "object" &&
+          value !== null &&
+          "getValue" in value &&
+          typeof (value as { getValue: () => unknown }).getValue === "function"
+        ) {
+          payload[key] = (value as { getValue: () => unknown }).getValue();
+        } else {
+          payload[key] = value;
+        }
+      }
+    }
+
+    return payload;
   }
 }
