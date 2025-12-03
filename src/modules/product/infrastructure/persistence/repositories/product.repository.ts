@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { IProductRepository, ProductRepositoryToken } from "src/modules/product/domain/repositories/product.repository.interface";
+import { IProductRepository } from "src/modules/product/domain/repositories/product.repository.interface";
 import { Product } from "src/modules/product/domain/entities/product.entity";
 import { ProductId } from "src/modules/product/domain/value-objects/product-id.vo";
 import { ProductMapper } from "../mappers/product.mapper";

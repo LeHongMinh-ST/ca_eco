@@ -31,7 +31,12 @@ export class ProductMapper {
   static toDomain(ormEntity: ProductOrmEntity): Product {
     const productId = ProductId.create(ormEntity.id);
     const name = ProductName.create(ormEntity.name);
-    const price = ProductPrice.create(ormEntity.price);
+    // Convert price from string (PostgreSQL DECIMAL) to number
+    const priceValue =
+      typeof ormEntity.price === "string"
+        ? parseFloat(ormEntity.price)
+        : ormEntity.price;
+    const price = ProductPrice.create(priceValue);
     const image = ProductImage.create(ormEntity.image);
 
     // Use reconstitute to avoid raising domain events when loading from database

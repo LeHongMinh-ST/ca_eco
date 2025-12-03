@@ -18,8 +18,9 @@ export class ProductOrmEntity {
   @Column({ type: "varchar", length: 255 })
   name: string;
 
+  // PostgreSQL DECIMAL type returns as string, will be converted to number in mapper
   @Column({ type: "decimal", precision: 10, scale: 2 })
-  price: number;
+  price: number | string;
 
   @Column({ type: "varchar", length: 2048 })
   image: string;

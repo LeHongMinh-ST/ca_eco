@@ -9,6 +9,7 @@ import { ConfigService } from "@nestjs/config";
 
 /**
  * Get TypeORM configuration from environment variables
+ * but we also need to register them here for TypeORM metadata initialization
  */
 export const getDatabaseConfig = (
   configService: ConfigService,
@@ -22,7 +23,7 @@ export const getDatabaseConfig = (
     database: configService.get<string>("DATABASE_NAME") || "ca_eco",
     synchronize: configService.get<string>("DATABASE_SYNCHRONIZE") === "true",
     logging: configService.get<string>("DATABASE_LOGGING") === "true",
-    entities: [join(__dirname, "../../../modules/**/*.orm-entity{.ts,.js}")],
+    entities: [join(__dirname, "../../modules/**/*.orm-entity{.ts,.js}")],
     migrations: [join(__dirname, "../migrations/*{.ts,.js}")],
     migrationsRun: false,
     migrationsTableName: "migrations",
