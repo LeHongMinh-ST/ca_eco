@@ -1,3 +1,4 @@
+import { ApiProperty } from "@nestjs/swagger";
 import { User } from "src/modules/user/domain/entities/user.entity";
 
 /**
@@ -6,8 +7,22 @@ import { User } from "src/modules/user/domain/entities/user.entity";
  * Note: Password is never included in DTO for security reasons
  */
 export class UserDto {
+  @ApiProperty({
+    description: "User ID (UUID)",
+    example: "123e4567-e89b-12d3-a456-426614174000",
+  })
   readonly id: string;
+
+  @ApiProperty({
+    description: "User email address",
+    example: "john.doe@example.com",
+  })
   readonly email: string;
+
+  @ApiProperty({
+    description: "User full name",
+    example: "John Doe",
+  })
   readonly name: string;
 
   constructor(id: string, email: string, name: string) {

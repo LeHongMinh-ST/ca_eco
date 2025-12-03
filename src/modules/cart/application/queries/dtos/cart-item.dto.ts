@@ -1,3 +1,4 @@
+import { ApiProperty } from "@nestjs/swagger";
 import { CartItem } from "src/modules/cart/domain/entities/cart-item.entity";
 
 /**
@@ -5,12 +6,46 @@ import { CartItem } from "src/modules/cart/domain/entities/cart-item.entity";
  * Used for returning cart item data from queries
  */
 export class CartItemDto {
+  @ApiProperty({
+    description: "Cart item ID (UUID)",
+    example: "333e4567-e89b-12d3-a456-426614174002",
+  })
   readonly id: string;
+
+  @ApiProperty({
+    description: "Product ID (UUID)",
+    example: "223e4567-e89b-12d3-a456-426614174001",
+  })
   readonly productId: string;
+
+  @ApiProperty({
+    description: "Product name",
+    example: "iPhone 15 Pro Max",
+  })
   readonly productName: string;
+
+  @ApiProperty({
+    description: "Product price in VND",
+    example: 29990000,
+  })
   readonly productPrice: number;
+
+  @ApiProperty({
+    description: "Product image URL",
+    example: "https://example.com/images/iphone-15-pro-max.jpg",
+  })
   readonly productImage: string;
+
+  @ApiProperty({
+    description: "Quantity of this product in cart",
+    example: 2,
+  })
   readonly quantity: number;
+
+  @ApiProperty({
+    description: "Total price for this item (productPrice * quantity)",
+    example: 59980000,
+  })
   readonly totalPrice: number;
 
   constructor(

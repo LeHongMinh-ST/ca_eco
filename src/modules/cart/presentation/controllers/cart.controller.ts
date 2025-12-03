@@ -8,7 +8,15 @@ import {
   Param,
   HttpCode,
   HttpStatus,
+  Logger,
 } from "@nestjs/common";
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBody,
+} from "@nestjs/swagger";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import { CreateCartCommand } from "../../application/commands/create-cart/create-cart.command";
 import { CreateCartResult } from "../../application/commands/create-cart/create-cart.result";
@@ -26,8 +34,11 @@ import { UpdateItemQuantityDto } from "../dtos/update-item-quantity.dto";
 /**
  * CartController handles HTTP requests for cart operations
  */
+@ApiTags("carts")
 @Controller("carts")
 export class CartController {
+  private readonly logger = new Logger(CartController.name);
+
   constructor(
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
@@ -39,11 +50,29 @@ export class CartController {
    */
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() createCartDto: CreateCartDto): Promise<CreateCartResult> {
+  @ApiOperation({ summary: "Create a new cart for a user" })
+  @ApiBody({ type: CreateCartDto })
+  @ApiResponse({
+    status: 201,
+    description: "Cart created successfully",
+    schema: {
+      example: {
+        cartId: "443e4567-e89b-12d3-a456-426614174003",
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: "Bad request - validation failed" })
+  async create(
+    @Body() createCartDto: CreateCartDto,
+  ): Promise<CreateCartResult> {
+    this.logger.log("Creating cart with DTO:", JSON.stringify(createCartDto));
     const command = new CreateCartCommand(createCartDto.userId);
-    return await this.commandBus.execute<CreateCartCommand, CreateCartResult>(
-      command,
-    );
+    const result = await this.commandBus.execute<
+      CreateCartCommand,
+      CreateCartResult
+    >(command);
+    this.logger.log("Cart created successfully:", result.cartId);
+    return result;
   }
 
   /**
@@ -51,6 +80,18 @@ export class CartController {
    * GET /carts/:id
    */
   @Get(":id")
+  @ApiOperation({ summary: "Get a cart by ID" })
+  @ApiParam({
+    name: "id",
+    description: "Cart ID (UUID)",
+    example: "443e4567-e89b-12d3-a456-426614174003",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Cart found",
+    type: CartDto,
+  })
+  @ApiResponse({ status: 404, description: "Cart not found" })
   async findOne(@Param("id") id: string): Promise<CartDto> {
     const query = new GetCartByIdQuery(id);
     return await this.queryBus.execute<GetCartByIdQuery, CartDto>(query);
@@ -61,6 +102,18 @@ export class CartController {
    * GET /carts/user/:userId
    */
   @Get("user/:userId")
+  @ApiOperation({ summary: "Get a cart by user ID" })
+  @ApiParam({
+    name: "userId",
+    description: "User ID (UUID)",
+    example: "123e4567-e89b-12d3-a456-426614174000",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Cart found",
+    type: CartDto,
+  })
+  @ApiResponse({ status: 404, description: "Cart not found" })
   async findByUserId(@Param("userId") userId: string): Promise<CartDto> {
     const query = new GetCartByUserIdQuery(userId);
     return await this.queryBus.execute<GetCartByUserIdQuery, CartDto>(query);
@@ -71,11 +124,25 @@ export class CartController {
    * POST /carts/:cartId/items
    */
   @Post(":cartId/items")
-  @HttpCode(HttpStatus.CREATED)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Add an item to cart" })
+  @ApiParam({
+    name: "cartId",
+    description: "Cart ID (UUID)",
+    example: "443e4567-e89b-12d3-a456-426614174003",
+  })
+  @ApiBody({ type: AddItemToCartDto })
+  @ApiResponse({ status: 200, description: "Item added to cart successfully" })
+  @ApiResponse({ status: 404, description: "Cart or Product not found" })
+  @ApiResponse({ status: 400, description: "Bad request - validation failed" })
   async addItem(
     @Param("cartId") cartId: string,
     @Body() addItemDto: AddItemToCartDto,
   ): Promise<void> {
+    this.logger.log(
+      `Adding item to cart ${cartId}:`,
+      JSON.stringify(addItemDto),
+    );
     const command = new AddItemToCartCommand(
       cartId,
       addItemDto.productId,
@@ -89,6 +156,24 @@ export class CartController {
    * PUT /carts/:cartId/items/:itemId
    */
   @Put(":cartId/items/:itemId")
+  @ApiOperation({ summary: "Update cart item quantity" })
+  @ApiParam({
+    name: "cartId",
+    description: "Cart ID (UUID)",
+    example: "443e4567-e89b-12d3-a456-426614174003",
+  })
+  @ApiParam({
+    name: "itemId",
+    description: "Cart item ID (UUID)",
+    example: "333e4567-e89b-12d3-a456-426614174002",
+  })
+  @ApiBody({ type: UpdateItemQuantityDto })
+  @ApiResponse({
+    status: 200,
+    description: "Item quantity updated successfully",
+  })
+  @ApiResponse({ status: 404, description: "Cart or Item not found" })
+  @ApiResponse({ status: 400, description: "Bad request - validation failed" })
   async updateItemQuantity(
     @Param("cartId") cartId: string,
     @Param("itemId") itemId: string,
@@ -108,6 +193,19 @@ export class CartController {
    */
   @Delete(":cartId/items/:itemId")
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: "Remove an item from cart" })
+  @ApiParam({
+    name: "cartId",
+    description: "Cart ID (UUID)",
+    example: "443e4567-e89b-12d3-a456-426614174003",
+  })
+  @ApiParam({
+    name: "itemId",
+    description: "Cart item ID (UUID)",
+    example: "333e4567-e89b-12d3-a456-426614174002",
+  })
+  @ApiResponse({ status: 204, description: "Item removed successfully" })
+  @ApiResponse({ status: 404, description: "Cart or Item not found" })
   async removeItem(
     @Param("cartId") cartId: string,
     @Param("itemId") itemId: string,
@@ -118,13 +216,20 @@ export class CartController {
 
   /**
    * Clears all items from cart
-   * DELETE /carts/:cartId
+   * DELETE /carts/:cartId/clear
    */
-  @Delete(":cartId")
+  @Delete(":cartId/clear")
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: "Clear all items from cart" })
+  @ApiParam({
+    name: "cartId",
+    description: "Cart ID (UUID)",
+    example: "443e4567-e89b-12d3-a456-426614174003",
+  })
+  @ApiResponse({ status: 204, description: "Cart cleared successfully" })
+  @ApiResponse({ status: 404, description: "Cart not found" })
   async clear(@Param("cartId") cartId: string): Promise<void> {
     const command = new ClearCartCommand(cartId);
     await this.commandBus.execute<ClearCartCommand, void>(command);
   }
 }
-
