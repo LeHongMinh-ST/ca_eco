@@ -18,12 +18,14 @@ export class OrderCreated implements DomainEvent {
     quantity: number;
   }>;
   readonly totalPrice: number;
+  readonly sourceCartId?: string; // Original cart ID for clearing after order confirmation
 
   constructor(
     orderId: OrderId,
     userId: string,
     items: OrderItem[],
     totalPrice: number,
+    sourceCartId?: string,
   ) {
     this.orderId = orderId;
     this.userId = userId;
@@ -34,6 +36,7 @@ export class OrderCreated implements DomainEvent {
       quantity: item.getQuantity(),
     }));
     this.totalPrice = totalPrice;
+    this.sourceCartId = sourceCartId;
     this.occurredAt = new Date();
   }
 }

@@ -26,6 +26,9 @@ export class OrderOrmEntity {
   @Column({ type: "decimal", precision: 10, scale: 2 })
   totalPrice: number | string;
 
+  @Column({ type: "uuid", nullable: true })
+  sourceCartId: string | null; // Original cart ID that created this order
+
   @OneToMany(() => OrderItemOrmEntity, (item) => item.order, {
     cascade: true,
     eager: true,

@@ -21,6 +21,7 @@ export class Order extends BaseEntity<OrderId> {
   private readonly totalPrice: number;
   private readonly createdAt: Date;
   private updatedAt: Date;
+  private readonly sourceCartId?: string; // Original cart ID that created this order
 
   private constructor(
     id: OrderId,
@@ -30,6 +31,7 @@ export class Order extends BaseEntity<OrderId> {
     totalPrice: number,
     createdAt: Date,
     updatedAt: Date,
+    sourceCartId?: string,
   ) {
     super(id);
     this.userId = userId;
@@ -38,16 +40,22 @@ export class Order extends BaseEntity<OrderId> {
     this.totalPrice = totalPrice;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
+    this.sourceCartId = sourceCartId;
   }
 
   /**
    * Factory method to create a new Order instance
    * Raises OrderCreated domain event
+   * @param id - Order identifier
+   * @param userId - User who created the order
+   * @param items - Order items
+   * @param sourceCartId - Optional cart ID that created this order (used for clearing cart after confirmation)
    */
   static create(
     id: OrderId,
     userId: UserId,
     items: OrderItem[],
+    sourceCartId?: string,
   ): Order {
     if (!items || items.length === 0) {
       throw new InvalidInputError(
@@ -71,10 +79,11 @@ export class Order extends BaseEntity<OrderId> {
       totalPrice,
       now,
       now,
+      sourceCartId,
     );
 
     order.recordEvent(
-      new OrderCreated(order.getId(), userId.getValue(), items, totalPrice),
+      new OrderCreated(order.getId(), userId.getValue(), items, totalPrice, sourceCartId),
     );
 
     return order;
@@ -92,8 +101,9 @@ export class Order extends BaseEntity<OrderId> {
     totalPrice: number,
     createdAt: Date,
     updatedAt: Date,
+    sourceCartId?: string,
   ): Order {
-    return new Order(id, userId, items, status, totalPrice, createdAt, updatedAt);
+    return new Order(id, userId, items, status, totalPrice, createdAt, updatedAt, sourceCartId);
   }
 
   /**
@@ -256,6 +266,13 @@ export class Order extends BaseEntity<OrderId> {
    */
   getUpdatedAt(): Date {
     return this.updatedAt;
+  }
+
+  /**
+   * Gets source cart ID (if order was created from a cart)
+   */
+  getSourceCartId(): string | undefined {
+    return this.sourceCartId;
   }
 
   /**

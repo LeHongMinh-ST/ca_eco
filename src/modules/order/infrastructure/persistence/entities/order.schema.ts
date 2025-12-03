@@ -52,6 +52,9 @@ export class OrderMongoEntity {
   @Prop({ type: Number, required: true, min: 0 })
   totalPrice: number;
 
+  @Prop({ type: String, required: false })
+  sourceCartId?: string; // Original cart ID that created this order
+
   @Prop({ type: [OrderItemMongoEntity], default: [] })
   items: OrderItemMongoEntity[];
 

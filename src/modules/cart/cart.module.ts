@@ -27,6 +27,7 @@ import { UserServicePortToken } from "./domain/services/user-service.port";
 import { DatabaseType } from "../../databases/database.factory";
 import { OutboxModule } from "../../shared/infrastructure/outbox/outbox.module";
 import { UserCreatedHandler } from "./application/events/user-created.handler";
+import { CartClearOnOrderConfirmedHandler } from "./application/events/order-confirmed.handler";
 import { EventHandlersRegistry } from "../../shared/application/events/event-handlers-registry";
 
 /**
@@ -99,7 +100,8 @@ export class CartModule {
         },
         // Event handlers
         UserCreatedHandler,
-        // Register event handler with registry
+        CartClearOnOrderConfirmedHandler,
+        // Register event handlers with registry
         {
           provide: "REGISTER_USER_CREATED_HANDLER",
           useFactory: (
@@ -110,6 +112,17 @@ export class CartModule {
             return handler;
           },
           inject: [UserCreatedHandler, EventHandlersRegistry],
+        },
+        {
+          provide: "REGISTER_CART_CLEAR_ON_ORDER_CONFIRMED_HANDLER",
+          useFactory: (
+            handler: CartClearOnOrderConfirmedHandler,
+            registry: EventHandlersRegistry,
+          ) => {
+            registry.register("OrderConfirmed", handler);
+            return handler;
+          },
+          inject: [CartClearOnOrderConfirmedHandler, EventHandlersRegistry],
         },
       ],
       exports: [CartRepositoryToken],

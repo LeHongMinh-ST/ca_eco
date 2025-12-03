@@ -31,6 +31,7 @@ export class CreateOrderHandler implements ICommandHandler<
 
   /**
    * Executes the create order command
+   * Creates order with PENDING status, cart will be cleared after order is confirmed
    * @param command - CreateOrderCommand containing cart ID
    * @returns Promise that resolves to CreateOrderResult with created order ID
    * @throws NotFoundError if cart not found
@@ -65,14 +66,14 @@ export class CreateOrderHandler implements ICommandHandler<
       ),
     );
 
-    // Create order entity
+    // Create order entity with source cart ID
     const userId = UserId.create(cartInfo.userId);
-    const order = Order.create(orderId, userId, orderItems);
+    const order = Order.create(orderId, userId, orderItems, command.cartId);
 
     // Save order
     await this.orderRepository.save(order);
 
-    // Clear cart after order creation
+    // Clear cart immediately after order creation
     await this.cartService.clearCart(command.cartId);
 
     return new CreateOrderResult(orderId.getValue());

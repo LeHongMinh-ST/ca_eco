@@ -44,12 +44,21 @@ export class OrderCreatedHandler implements IEventHandler {
       // Extract order information from event payload
       const eventPayload = event as unknown as Record<string, unknown>;
       let orderIdValue: string | undefined;
+      let sourceCartId: string | undefined;
       let items: Array<{
         productId: string;
         productName: string;
         productPrice: number;
         quantity: number;
       }> = [];
+
+      // Extract sourceCartId from event payload
+      if (
+        eventPayload.sourceCartId &&
+        typeof eventPayload.sourceCartId === "string"
+      ) {
+        sourceCartId = eventPayload.sourceCartId;
+      }
 
       const orderIdFromPayload = eventPayload.orderId;
       if (orderIdFromPayload) {
@@ -175,12 +184,14 @@ export class OrderCreatedHandler implements IEventHandler {
           );
         }
 
-        // All inventory decreases successful, raise OrderConfirmed event
+        // All inventory decreases successful, raise OrderConfirmed event with sourceCartId
         this.logger.log(
           `All inventory checks passed for order ${orderIdValue}, confirming order`,
         );
 
-        await this.eventDispatcher.dispatch(new OrderConfirmed(orderId));
+        await this.eventDispatcher.dispatch(
+          new OrderConfirmed(orderId, sourceCartId),
+        );
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : String(error);

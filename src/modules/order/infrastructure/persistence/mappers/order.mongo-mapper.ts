@@ -24,6 +24,7 @@ export class OrderMongoMapper {
       userId: order.getUserId().getValue(),
       status: order.getStatus().getValue(),
       totalPrice: order.getTotalPrice(),
+      sourceCartId: order.getSourceCartId(),
       items: order.getItems().map((item) => ({
         id: crypto.randomUUID(), // Generate ID for order item
         productId: item.getProductId().getValue(),
@@ -65,6 +66,7 @@ export class OrderMongoMapper {
       document.totalPrice,
       document.createdAt,
       document.updatedAt,
+      document.sourceCartId,
     );
   }
 }

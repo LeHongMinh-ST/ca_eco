@@ -4,10 +4,8 @@ import { OrderStatus } from "src/modules/order/domain/value-objects/order-status
 import { OrderItem } from "src/modules/order/domain/value-objects/order-item.vo";
 import { UserId } from "src/modules/cart/domain/value-objects/user-id.vo";
 import { ProductId } from "src/modules/product/domain/value-objects/product-id.vo";
-import {
-  OrderOrmEntity,
-  OrderItemOrmEntity,
-} from "../entities/order.orm-entity";
+import { OrderOrmEntity } from "../entities/order.orm-entity";
+import { OrderItemOrmEntity } from "../entities/order-item.orm-entity";
 
 /**
  * OrderMapper converts between domain entities and TypeORM entities
@@ -24,6 +22,7 @@ export class OrderMapper {
       userId: order.getUserId().getValue(),
       status: order.getStatus().getValue(),
       totalPrice: order.getTotalPrice(),
+      sourceCartId: order.getSourceCartId() ?? null,
       items: order.getItems().map((item) => ({
         id: crypto.randomUUID(), // Generate ID for order item
         orderId: order.getId().getValue(),
@@ -76,6 +75,7 @@ export class OrderMapper {
       totalPrice,
       ormEntity.createdAt,
       ormEntity.updatedAt,
+      ormEntity.sourceCartId ?? undefined,
     );
   }
 }
