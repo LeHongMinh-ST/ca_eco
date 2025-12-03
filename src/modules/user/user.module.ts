@@ -19,6 +19,7 @@ import {
 import { UserMongoRepository } from "./infrastructure/persistence/repositories/user.mongo-repository";
 import { UserRepositoryToken } from "./domain/repositories/user.repository.interface";
 import { DatabaseType } from "../../databases/database.factory";
+import { OutboxModule } from "../../shared/infrastructure/outbox/outbox.module";
 
 /**
  * UserModule dynamically configures persistence layer based on DB_TYPE
@@ -36,7 +37,7 @@ export class UserModule {
     const dbType = (process.env.DB_TYPE || DatabaseType.POSTGRES).toLowerCase();
 
     let repositoryClass: typeof UserMongoRepository | typeof UserRepository;
-    const imports: any[] = [CqrsModule];
+    const imports: any[] = [CqrsModule, OutboxModule.forRoot()];
 
     switch (dbType) {
       case DatabaseType.MONGODB.toLowerCase():

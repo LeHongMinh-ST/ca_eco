@@ -27,6 +27,10 @@ const dataSource = new DataSource({
       rootDir,
       "src/modules/**/infrastructure/persistence/entities/*.orm-entity{.ts,.js}",
     ),
+    join(
+      rootDir,
+      "src/shared/**/*.orm-entity{.ts,.js}",
+    ),
   ],
   migrations: [join(rootDir, "src/migrations/*{.ts,.js}")],
 });

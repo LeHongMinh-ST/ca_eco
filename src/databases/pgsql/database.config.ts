@@ -23,7 +23,10 @@ export const getDatabaseConfig = (
     database: configService.get<string>("DATABASE_NAME") || "ca_eco",
     synchronize: configService.get<string>("DATABASE_SYNCHRONIZE") === "true",
     logging: configService.get<string>("DATABASE_LOGGING") === "true",
-    entities: [join(__dirname, "../../modules/**/*.orm-entity{.ts,.js}")],
+    entities: [
+      join(__dirname, "../../modules/**/*.orm-entity{.ts,.js}"),
+      join(__dirname, "../../shared/**/*.orm-entity{.ts,.js}"),
+    ],
     migrations: [join(__dirname, "../migrations/*{.ts,.js}")],
     migrationsRun: false,
     migrationsTableName: "migrations",

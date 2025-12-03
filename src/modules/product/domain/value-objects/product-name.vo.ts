@@ -30,6 +30,7 @@ export class ProductName extends BaseVo<string> {
    * - Must be within length constraints
    */
   private static ensureValidName(value: string): void {
+
     if (!value || typeof value !== "string") {
       throw new InvalidInputError(
         "Product name is required and must be a string",

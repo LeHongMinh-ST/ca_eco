@@ -1,4 +1,4 @@
-import { DynamicModule, Module, forwardRef } from "@nestjs/common";
+import { DynamicModule, Module } from "@nestjs/common";
 import { CqrsModule } from "@nestjs/cqrs";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { MongooseModule } from "@nestjs/mongoose";
@@ -25,6 +25,7 @@ import { ProductServicePortToken } from "./domain/services/product-service.port"
 import { UserServiceAdapter } from "./infrastructure/adapters/user-service.adapter";
 import { UserServicePortToken } from "./domain/services/user-service.port";
 import { DatabaseType } from "../../databases/database.factory";
+import { OutboxModule } from "../../shared/infrastructure/outbox/outbox.module";
 
 /**
  * CartModule dynamically configures persistence layer based on DB_TYPE
@@ -45,8 +46,9 @@ export class CartModule {
     let repositoryClass: typeof CartMongoRepository | typeof CartRepository;
     const imports: any[] = [
       CqrsModule,
+      OutboxModule.forRoot(),
       ProductModule.forRoot(),
-      forwardRef(() => UserModule),
+      UserModule.forRoot(),
     ];
 
     switch (dbType) {
