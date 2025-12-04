@@ -7,8 +7,8 @@ import { CartId } from "../../domain/value-objects/cart-id.vo";
 
 /**
  * CartClearOnOrderConfirmedHandler handles OrderConfirmed domain events
- * Note: Cart is already cleared immediately after order creation in CreateOrderHandler
- * This handler serves as a safety net to clear cart if it wasn't cleared before
+ * Clears the cart after order is confirmed (inventory check passed)
+ * This ensures cart is only cleared when order is successfully processed
  */
 @Injectable()
 export class CartClearOnOrderConfirmedHandler implements IEventHandler {
@@ -64,13 +64,13 @@ export class CartClearOnOrderConfirmedHandler implements IEventHandler {
         return;
       }
 
-      // Check if cart is already empty (already cleared by CreateOrderHandler)
+      // Check if cart is already empty
       if (cart.isEmpty()) {
         this.logger.log(`Cart ${sourceCartId} is already empty, skipping clear`);
         return;
       }
 
-      // Clear cart items (safety net)
+      // Clear cart items after order confirmation
       cart.clear();
 
       // Save cart
