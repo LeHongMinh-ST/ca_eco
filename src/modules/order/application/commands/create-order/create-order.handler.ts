@@ -71,8 +71,6 @@ export class CreateOrderHandler implements ICommandHandler<
     const order = Order.create(orderId, userId, orderItems, command.cartId);
 
     // Save order
-    // Note: Cart will be cleared automatically by CartClearOnOrderConfirmedHandler
-    // when OrderConfirmed event is raised (after inventory check passes)
     await this.orderRepository.save(order);
 
     return new CreateOrderResult(orderId.getValue());

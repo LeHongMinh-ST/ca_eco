@@ -6,10 +6,7 @@ import { Order } from "src/modules/order/domain/entities/order.entity";
 import { OrderId } from "src/modules/order/domain/value-objects/order-id.vo";
 import { UserId } from "src/modules/cart/domain/value-objects/user-id.vo";
 import { OrderMongoMapper } from "../mappers/order.mongo-mapper";
-import {
-  OrderMongoEntity,
-  OrderDocument,
-} from "../entities/order.schema";
+import { OrderMongoEntity, OrderDocument } from "../entities/order.schema";
 import type { IDomainEventDispatcher } from "src/shared/application/events/domain-event-dispatcher.interface";
 import { DomainEventDispatcherToken } from "src/shared/application/events/domain-event-dispatcher.interface";
 
